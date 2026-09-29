@@ -1,0 +1,42 @@
+{
+  "name": "plugin-load-order-probe",
+  "version": "1.0.0",
+  "description": "Finds WordPress plugin code that uses another plugin's classes or functions while plugins are still loading, and says whether it fails now or only works because of alphabetical load order.",
+  "type": "module",
+  "bin": {
+    "plugin-load-order-probe": "bin/plugin-load-order-probe.mjs"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "wordpress",
+    "plugins",
+    "load-order",
+    "plugins_loaded",
+    "woocommerce",
+    "static-analysis",
+    "php",
+    "cli"
+  ],
+  "author": "Hamza Ahmad Aslam (https://hamzaahmadaslam.com)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamzaahmadaslam/plugin-load-order-probe.git"
+  },
+  "homepage": "https://github.com/hamzaahmadaslam/plugin-load-order-probe#readme",
+  "bugs": {
+    "url": "https://github.com/hamzaahmadaslam/plugin-load-order-probe/issues"
+  },
+  "dependencies": {
+    "php-parser": "3.7.0"
+  }
+}

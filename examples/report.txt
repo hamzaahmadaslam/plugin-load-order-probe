@@ -1,0 +1,28 @@
+plugin-load-order-probe: 8 plugins checked.
+4 fail now, 1 never runs, 1 works only because of load order, 0 guarded.
+
+Fails now (4)
+  acme-gateway/acme-gateway.php  acme-gateway.php:7  extends WC_Payment_Gateway
+    This extends WC_Payment_Gateway from WooCommerce while plugins load. WordPress loads active plugins in the sorted order of their paths, and "acme-gateway/acme-gateway.php" comes before "woocommerce/woocommerce.php", so WC_Payment_Gateway is not defined yet and the site stops with a fatal error.
+    Fix: Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first.
+  early-tweaks.php  early-tweaks.php:6  new Acme_Helper
+    early-tweaks.php is a must-use plugin and creates Acme_Helper from acme-gateway while plugins load. Must-use plugins load before every regular plugin, so Acme_Helper is not defined yet and the site stops with a fatal error.
+    Fix: Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first.
+  included-addon/included-addon.php  includes/boot.php:4  call WC()
+    This calls WC() from WooCommerce while plugins load. WordPress loads active plugins in the sorted order of their paths, and "included-addon/included-addon.php" comes before "woocommerce/woocommerce.php", so WC() is not defined yet and the site stops with a fatal error.
+    reached through: included-addon.php:9 includes includes/boot.php
+    Fix: Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first.
+  namespaced-addon/namespaced-addon.php  src/class-order-view.php:6  extends WC_Order
+    This extends WC_Order from WooCommerce while plugins load. WordPress loads active plugins in the sorted order of their paths, and "namespaced-addon/namespaced-addon.php" comes before "woocommerce/woocommerce.php", so WC_Order is not defined yet and the site stops with a fatal error.
+    reached through: namespaced-addon.php:36 Namespaced\Addon\Plugin::instance() > namespaced-addon.php:16 new Namespaced\Addon\Plugin() > namespaced-addon.php:22 Namespaced\Addon\Plugin->includes() > namespaced-addon.php:27 includes src/class-order-view.php
+    Fix: Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first.
+
+Never runs (1)
+  guarded-gateway/guarded-gateway.php  guarded-gateway.php:12  extends WC_Payment_Gateway
+    This extends WC_Payment_Gateway from WooCommerce while plugins load, behind a check that it exists. "guarded-gateway/guarded-gateway.php" loads before "woocommerce/woocommerce.php", so the check always fails at that moment and the code behind it never runs: no error, and no feature.
+    Fix: Move the check and the code into a callback on plugins_loaded (or the provider's own loaded action), where the provider is always there if it is active.
+
+Works by load order (1)
+  zeta-addon/zeta-addon.php  zeta-addon.php:8  new Acme_Helper
+    This creates Acme_Helper from acme-gateway while plugins load. It works only because "acme-gateway/acme-gateway.php" sorts before "zeta-addon/zeta-addon.php". It breaks if the provider's folder is renamed, if this plugin is network-activated while the provider is not (network plugins load first), or if the code moves into a must-use plugin.
+    Fix: Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first.

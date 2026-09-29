@@ -1,0 +1,105 @@
+{
+  "checked": [
+    "acme-gateway/acme-gateway.php",
+    "good-addon/good-addon.php",
+    "guarded-gateway/guarded-gateway.php",
+    "included-addon/included-addon.php",
+    "namespaced-addon/namespaced-addon.php",
+    "woocommerce/woocommerce.php",
+    "zeta-addon/zeta-addon.php",
+    "early-tweaks.php"
+  ],
+  "results": [
+    {
+      "plugin": "acme-gateway/acme-gateway.php",
+      "mu": false,
+      "verdict": "fails",
+      "symbol": "WC_Payment_Gateway",
+      "kind": "class",
+      "how": "extends",
+      "provider": "WooCommerce",
+      "providerFile": "woocommerce/woocommerce.php",
+      "at": "acme-gateway.php:7",
+      "via": [],
+      "why": "This extends WC_Payment_Gateway from WooCommerce while plugins load. WordPress loads active plugins in the sorted order of their paths, and \"acme-gateway/acme-gateway.php\" comes before \"woocommerce/woocommerce.php\", so WC_Payment_Gateway is not defined yet and the site stops with a fatal error.",
+      "fix": "Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first."
+    },
+    {
+      "plugin": "early-tweaks.php",
+      "mu": true,
+      "verdict": "fails",
+      "symbol": "Acme_Helper",
+      "kind": "class",
+      "how": "new",
+      "provider": "acme-gateway",
+      "providerFile": "acme-gateway/acme-gateway.php",
+      "at": "early-tweaks.php:6",
+      "via": [],
+      "why": "early-tweaks.php is a must-use plugin and creates Acme_Helper from acme-gateway while plugins load. Must-use plugins load before every regular plugin, so Acme_Helper is not defined yet and the site stops with a fatal error.",
+      "fix": "Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first."
+    },
+    {
+      "plugin": "included-addon/included-addon.php",
+      "mu": false,
+      "verdict": "fails",
+      "symbol": "WC",
+      "kind": "function",
+      "how": "call",
+      "provider": "WooCommerce",
+      "providerFile": "woocommerce/woocommerce.php",
+      "at": "includes/boot.php:4",
+      "via": [
+        "included-addon.php:9 includes includes/boot.php"
+      ],
+      "why": "This calls WC() from WooCommerce while plugins load. WordPress loads active plugins in the sorted order of their paths, and \"included-addon/included-addon.php\" comes before \"woocommerce/woocommerce.php\", so WC() is not defined yet and the site stops with a fatal error.",
+      "fix": "Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first."
+    },
+    {
+      "plugin": "namespaced-addon/namespaced-addon.php",
+      "mu": false,
+      "verdict": "fails",
+      "symbol": "WC_Order",
+      "kind": "class",
+      "how": "extends",
+      "provider": "WooCommerce",
+      "providerFile": "woocommerce/woocommerce.php",
+      "at": "src/class-order-view.php:6",
+      "via": [
+        "namespaced-addon.php:36 Namespaced\\Addon\\Plugin::instance()",
+        "namespaced-addon.php:16 new Namespaced\\Addon\\Plugin()",
+        "namespaced-addon.php:22 Namespaced\\Addon\\Plugin->includes()",
+        "namespaced-addon.php:27 includes src/class-order-view.php"
+      ],
+      "why": "This extends WC_Order from WooCommerce while plugins load. WordPress loads active plugins in the sorted order of their paths, and \"namespaced-addon/namespaced-addon.php\" comes before \"woocommerce/woocommerce.php\", so WC_Order is not defined yet and the site stops with a fatal error.",
+      "fix": "Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first."
+    },
+    {
+      "plugin": "guarded-gateway/guarded-gateway.php",
+      "mu": false,
+      "verdict": "skipped",
+      "symbol": "WC_Payment_Gateway",
+      "kind": "class",
+      "how": "extends",
+      "provider": "WooCommerce",
+      "providerFile": "woocommerce/woocommerce.php",
+      "at": "guarded-gateway.php:12",
+      "via": [],
+      "why": "This extends WC_Payment_Gateway from WooCommerce while plugins load, behind a check that it exists. \"guarded-gateway/guarded-gateway.php\" loads before \"woocommerce/woocommerce.php\", so the check always fails at that moment and the code behind it never runs: no error, and no feature.",
+      "fix": "Move the check and the code into a callback on plugins_loaded (or the provider's own loaded action), where the provider is always there if it is active."
+    },
+    {
+      "plugin": "zeta-addon/zeta-addon.php",
+      "mu": false,
+      "verdict": "fragile",
+      "symbol": "Acme_Helper",
+      "kind": "class",
+      "how": "new",
+      "provider": "acme-gateway",
+      "providerFile": "acme-gateway/acme-gateway.php",
+      "at": "zeta-addon.php:8",
+      "via": [],
+      "why": "This creates Acme_Helper from acme-gateway while plugins load. It works only because \"acme-gateway/acme-gateway.php\" sorts before \"zeta-addon/zeta-addon.php\". It breaks if the provider's folder is renamed, if this plugin is network-activated while the provider is not (network plugins load first), or if the code moves into a must-use plugin.",
+      "fix": "Run it from a callback on plugins_loaded (or the provider's own loaded action, such as woocommerce_loaded), or check class_exists() or function_exists() first."
+    }
+  ]
+}
